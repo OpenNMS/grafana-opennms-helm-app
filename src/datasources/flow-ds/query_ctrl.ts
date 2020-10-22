@@ -67,7 +67,13 @@ export class FlowDatasourceQueryCtrl extends QueryCtrl {
   }
 
   getAltSegments() {
-    return Promise.resolve([{ value: 'applications' }, { value: 'conversations' }, { value: 'hosts' }]);
+    return Promise.resolve([
+      {value: 'applications'},
+      {value: 'conversations'},
+      {value: 'hosts'},
+      {value: 'dscps'},
+      {value: 'ecns'}
+    ]);
   }
 
   addFunction(funcDef) {

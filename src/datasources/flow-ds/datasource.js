@@ -1,5 +1,7 @@
 import _ from 'lodash';
-import {ClientDelegate} from '../../lib/client_delegate';
+import {ClientDelegate} from 'src/lib/client_delegate';
+import {processSelectionVariables} from "src/lib/utils2";
+import {dscpLabel, dscpSelectOptions, ecnLabel, ecnSelectOptions} from "src/lib/tos_helper";
 import kbn from 'app/core/utils/kbn';
 
 export function intervalToMs(arg) {
@@ -41,6 +43,8 @@ export class FlowDatasource {
     // Filter
     let exporterNode = this.getFunctionParameterOrDefault(target, 'withExporterNode', 0);
     let ifIndex = this.getFunctionParameterOrDefault(target, 'withIfIndex', 0);
+    let dscp = processSelectionVariables(this.getFunctionParametersOrDefault(target, 'withDscp', 0, null));
+    let ecn = processSelectionVariables(this.getFunctionParametersOrDefault(target, 'withEcn', 0, null));
     let applications = this.getFunctionParametersOrDefault(target, 'withApplication', 0, null);
     let conversations = this.getFunctionParametersOrDefault(target, 'withConversation', 0, null);
     let hosts = this.getFunctionParametersOrDefault(target, 'withHost', 0, null);
@@ -61,13 +65,13 @@ export class FlowDatasource {
       case 'conversations':
         if (!asTableSummary) {
           if (conversations && conversations.length > 0) {
-            return this.client.getSeriesForConversations(conversations, start, end, step, includeOther, exporterNode, ifIndex).then(series => {
+            return this.client.getSeriesForConversations(conversations, start, end, step, includeOther, exporterNode, ifIndex, dscp, ecn).then(series => {
               return {
                 data: FlowDatasource.toSeries(target, series)
               };
             });
           } else {
-            return this.client.getSeriesForTopNConversations(N, start, end, step, includeOther, exporterNode, ifIndex).then(series => {
+            return this.client.getSeriesForTopNConversations(N, start, end, step, includeOther, exporterNode, ifIndex, dscp, ecn).then(series => {
               return {
                 data: FlowDatasource.toSeries(target, series)
               };
@@ -75,13 +79,13 @@ export class FlowDatasource {
           }
         } else {
           if (conversations && conversations.length > 0) {
-            return this.client.getSummaryForConversations(conversations, start, end, includeOther, exporterNode, ifIndex).then(table => {
+            return this.client.getSummaryForConversations(conversations, start, end, includeOther, exporterNode, ifIndex, dscp, ecn).then(table => {
               return {
                 data: FlowDatasource.toTable(target, table)
               };
             });
           } else {
-            return this.client.getSummaryForTopNConversations(N, start, end, includeOther, exporterNode, ifIndex).then(table => {
+            return this.client.getSummaryForTopNConversations(N, start, end, includeOther, exporterNode, ifIndex, dscp, ecn).then(table => {
               return {
                 data: FlowDatasource.toTable(target, table)
               };
@@ -91,13 +95,13 @@ export class FlowDatasource {
       case 'applications':
         if (!asTableSummary) {
           if (applications && applications.length > 0) {
-            return this.client.getSeriesForApplications(applications, start, end, step, includeOther, exporterNode, ifIndex).then(series => {
+            return this.client.getSeriesForApplications(applications, start, end, step, includeOther, exporterNode, ifIndex, dscp, ecn).then(series => {
               return {
                 data: FlowDatasource.toSeries(target, series)
               };
             });
           } else {
-            return this.client.getSeriesForTopNApplications(N, start, end, step, includeOther, exporterNode, ifIndex).then(series => {
+            return this.client.getSeriesForTopNApplications(N, start, end, step, includeOther, exporterNode, ifIndex, dscp, ecn).then(series => {
               return {
                 data: FlowDatasource.toSeries(target, series)
               };
@@ -105,13 +109,13 @@ export class FlowDatasource {
           }
         } else {
           if (applications && applications.length > 0) {
-            return this.client.getSummaryForApplications(applications, start, end, includeOther, exporterNode, ifIndex).then(table => {
+            return this.client.getSummaryForApplications(applications, start, end, includeOther, exporterNode, ifIndex, dscp, ecn).then(table => {
               return {
                 data: FlowDatasource.toTable(target, table)
               };
             });
           } else {
-            return this.client.getSummaryForTopNApplications(N, start, end, includeOther, exporterNode, ifIndex).then(table => {
+            return this.client.getSummaryForTopNApplications(N, start, end, includeOther, exporterNode, ifIndex, dscp, ecn).then(table => {
               return {
                 data: FlowDatasource.toTable(target, table)
               };
@@ -121,13 +125,13 @@ export class FlowDatasource {
       case 'hosts':
         if (!asTableSummary) {
           if (hosts && hosts.length > 0) {
-            return this.client.getSeriesForHosts(hosts, start, end, step, includeOther, exporterNode, ifIndex).then(series => {
+            return this.client.getSeriesForHosts(hosts, start, end, step, includeOther, exporterNode, ifIndex, dscp, ecn).then(series => {
               return {
                 data: FlowDatasource.toSeries(target, series)
               };
             });
           } else {
-            return this.client.getSeriesForTopNHosts(N, start, end, step, includeOther, exporterNode, ifIndex).then(series => {
+            return this.client.getSeriesForTopNHosts(N, start, end, step, includeOther, exporterNode, ifIndex, dscp, ecn).then(series => {
               return {
                 data: FlowDatasource.toSeries(target, series)
               };
@@ -135,18 +139,46 @@ export class FlowDatasource {
           }
         } else {
           if (hosts && hosts.length > 0) {
-            return this.client.getSummaryForHosts(hosts, start, end, includeOther, exporterNode, ifIndex).then(table => {
+            return this.client.getSummaryForHosts(hosts, start, end, includeOther, exporterNode, ifIndex, dscp, ecn).then(table => {
               return {
                 data: FlowDatasource.toTable(target, table)
               };
             });
           } else {
-            return this.client.getSummaryForTopNHosts(N, start, end, includeOther, exporterNode, ifIndex).then(table => {
+            return this.client.getSummaryForTopNHosts(N, start, end, includeOther, exporterNode, ifIndex, dscp, ecn).then(table => {
               return {
                 data: FlowDatasource.toTable(target, table)
               };
             });
           }
+        }
+      case 'dscps':
+        if (!asTableSummary) {
+          return this.client.getSeriesForDscps(start, end, step, exporterNode, ifIndex, dscp, ecn).then(series => {
+            return {
+              data: FlowDatasource.toSeries(target, series, dscpLabel)
+            };
+          });
+        } else {
+          return this.client.getSummaryForDscps(start, end, exporterNode, ifIndex, dscp, ecn).then(table => {
+            return {
+              data: FlowDatasource.toTable(target, table, dscpLabel)
+            };
+          });
+        }
+      case 'ecns':
+        if (!asTableSummary) {
+          return this.client.getSeriesForEcns(start, end, step, exporterNode, ifIndex, dscp, ecn).then(series => {
+            return {
+              data: FlowDatasource.toSeries(target, series, ecnLabel)
+            };
+          });
+        } else {
+          return this.client.getSummaryForEcns(start, end, exporterNode, ifIndex, dscp, ecn).then(table => {
+            return {
+              data: FlowDatasource.toTable(target, table, ecnLabel)
+            };
+          });
         }
       default:
         throw 'Unsupported target metric: ' + target.metric;
@@ -194,24 +226,53 @@ export class FlowDatasource {
     }
     query = this.templateSrv.replace(query);
 
-    let exporterNodesRegex = /exporterNodesWithFlows\((.*)\)/;
-    let interfacesOnExporterNodeRegex = /interfacesOnExporterNodeWithFlows\((.*)\)/;
+    let exporterNodesRegex = /exporterNodesWithFlows\(\s*([^,]+),\s*([^\s]+\s*)\)/;
+    let interfacesOnExporterNodeRegex = /interfacesOnExporterNodeWithFlows\(\s*([^,]+),\s*([^,]+),\s*([^\s]+\s*)\)/;
+    let dscpOnExporterNodeAndInterfaceRegex = /dscpOnExporterNodeAndInterface\(\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^\s]+\s*)\)/;
+    let ecnOnExporterNodeAndInterfaceRegex = /ecnOnExporterNodeAndInterface\(\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^\s]+\s*)\)/;
 
     let exporterNodesQuery = query.match(exporterNodesRegex);
     if (exporterNodesQuery) {
-      return this.metricFindExporterNodes(exporterNodesQuery[1]);
+      return this.metricFindExporterNodes(
+          exporterNodesQuery[1], // start millis
+          exporterNodesQuery[2], // end millis
+      );
     }
 
     let interfacesOnExporterNodeQuery = query.match(interfacesOnExporterNodeRegex);
     if (interfacesOnExporterNodeQuery) {
-      return this.metricFindInterfacesOnExporterNode(interfacesOnExporterNodeQuery[1]);
+      return this.metricFindInterfacesOnExporterNode(
+          interfacesOnExporterNodeQuery[1], // node
+          interfacesOnExporterNodeQuery[2], // start millis
+          interfacesOnExporterNodeQuery[3], // end millis
+      );
+    }
+
+    let dscpOnExporterNodeAndInterfaceQuery = query.match(dscpOnExporterNodeAndInterfaceRegex);
+    if (dscpOnExporterNodeAndInterfaceQuery) {
+      return this.metricFindDscpOnExporterNodeAndInterface(
+          dscpOnExporterNodeAndInterfaceQuery[1], // node
+          dscpOnExporterNodeAndInterfaceQuery[2], // interface
+          dscpOnExporterNodeAndInterfaceQuery[3], // start millis
+          dscpOnExporterNodeAndInterfaceQuery[4], // end millis
+      );
+    }
+
+    let ecnOnExporterNodeAndInterfaceQuery = query.match(ecnOnExporterNodeAndInterfaceRegex);
+    if (ecnOnExporterNodeAndInterfaceQuery) {
+      return this.metricFindEcnOnExporterNodeAndInterface(
+          ecnOnExporterNodeAndInterfaceQuery[1], // node
+          ecnOnExporterNodeAndInterfaceQuery[2], // interface
+          ecnOnExporterNodeAndInterfaceQuery[3], // start millis
+          ecnOnExporterNodeAndInterfaceQuery[4], // end millis
+      );
     }
 
     return this.$q.resolve([]);
   }
 
-  metricFindExporterNodes(/* query */) {
-    return this.client.getExporters().then(exporters => {
+  metricFindExporterNodes(start, end) {
+    return this.client.getExporters(start, end).then(exporters => {
       let results = [];
       _.each(exporters, function (exporter) {
         results.push({text: exporter.label, value: exporter.id, expandable: true});
@@ -220,8 +281,8 @@ export class FlowDatasource {
     });
   }
 
-  metricFindInterfacesOnExporterNode(query) {
-    return this.client.getExporter(query).then(exporter => {
+  metricFindInterfacesOnExporterNode(query, start, end) {
+    return this.client.getExporter(query, start, end).then(exporter => {
       let results = [];
       _.each(exporter.interfaces, function (iff) {
         results.push({text: iff.name + "(" + iff.index + ")", value: iff.index, expandable: true});
@@ -230,7 +291,23 @@ export class FlowDatasource {
     });
   }
 
-  static toTable(target, table) {
+  metricFindDscpOnExporterNodeAndInterface(node, iface, start, end) {
+    return this.client.getDscpValues(node,  iface, start, end).then(
+        values => dscpSelectOptions(values)
+    );
+  }
+
+  metricFindEcnOnExporterNodeAndInterface(node, iface, start, end) {
+    return this.client.getEcnValues(node,  iface, start, end).then(
+        values => ecnSelectOptions(values)
+    );
+  }
+
+  static toTable(
+      target,
+      table,
+      labelTransformer
+  ) {
     let toBits = FlowDatasource.isFunctionPresent(target, 'toBits');
 
     if (toBits) {
@@ -245,6 +322,30 @@ export class FlowDatasource {
       table.headers[outIndex] = 'Bits Out';
     }
 
+    if (labelTransformer) {
+      table.rows.forEach(r => r[0] = labelTransformer(r[0]));
+    }
+
+    let ecnIndex = table.headers.lastIndexOf('ECN');
+    if (ecnIndex > 0) {
+      table.rows = _.map(table.rows, (row) => {
+        let label;
+        switch(row[ecnIndex]) {
+          // all flows used enc capable transports / no congestions were reported
+          case 0: label = 'ect / no ce'; break;
+          // at least some flows used non-enc-capable-transports / no congestions were reported
+          case 1: label = 'non-ect / no ce'; break;
+          // all flows used enc capable transports / congestions were reported
+          case 2: label = 'ect / ce'; break;
+          // at least some flows used non-enc-capable-transports / congestions were reported
+          case 3: label = 'non-ect / ce'; break;
+        }
+        if (label) {
+          row[ecnIndex] = label;
+        }
+        return row;
+      });
+    }
 
     let columns = table && table.headers ? _.map(table.headers, column => {
       return {"text": column}
@@ -263,7 +364,12 @@ export class FlowDatasource {
     ];
   }
 
-  static toSeries(target, flowSeries) {
+  static toSeries(
+      target,
+      flowSeries,
+      labelTransformer,
+  ) {
+    labelTransformer = labelTransformer ? labelTransformer : function(any) { return any; };
     let toBits = FlowDatasource.isFunctionPresent(target, 'toBits');
     let perSecond = FlowDatasource.isFunctionPresent(target, 'perSecond');
     let negativeEgress = FlowDatasource.isFunctionPresent(target, 'negativeEgress');
@@ -328,7 +434,7 @@ export class FlowDatasource {
         }
 
         series.push({
-          target: columns[i].label + suffix,
+          target: labelTransformer(columns[i].label) + suffix,
           datapoints: datapoints
         });
       }

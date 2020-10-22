@@ -165,7 +165,7 @@ angular
             if (this.$element.data('optionsUpdater')) {
               if (this.$element.val().length > 0) {
                 this.$element.data('optionsUpdater')(this.$element.val(),
-                    new OptionsContext(timeSrv, $scope.ctrl.functions, $scope.ctrl.datasource.client)).then((data) => {
+                    new OptionsContext(timeSrv, $scope.ctrl.functions, $scope.ctrl.datasource.client, templateSrv)).then((data) => {
                   typeahead.source = data;
                   return this.process(this.source);
                 });
@@ -308,10 +308,11 @@ angular
   });
 
 class OptionsContext {
-  constructor(timeSrv, functions, client) {
+  constructor(timeSrv, functions, client, templateSrv) {
     this.range = timeSrv.timeRange();
     this.functions = functions;
     this.client = client;
+    this.templateSrv = templateSrv;
   }
 
   getStartTime() {
@@ -330,11 +331,24 @@ class OptionsContext {
     return this.getFirstParam('withIfIndex');
   }
 
+  getTosByte() {
+    return this.getFirstParam('withTosByte');
+  }
+
+  getDscp() {
+    return this.getFirstParam('withDscp');
+  }
+
+  getEcn() {
+    return this.getFirstParam('withEcn');
+  }
+
   getFirstParam(defName) {
     let param = undefined;
     this.functions.forEach((func) => {
       if(func.def.name === defName) {
         param = func.params[0];
+        param = this.templateSrv.replace(param);
       }
     });
     return param;
