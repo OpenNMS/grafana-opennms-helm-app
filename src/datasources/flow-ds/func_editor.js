@@ -331,16 +331,8 @@ class OptionsContext {
     return this.getFirstParam('withIfIndex');
   }
 
-  getTosByte() {
-    return this.getFirstParam('withTosByte');
-  }
-
   getDscp() {
     return this.getFirstParam('withDscp');
-  }
-
-  getEcn() {
-    return this.getFirstParam('withEcn');
   }
 
   getFirstParam(defName) {

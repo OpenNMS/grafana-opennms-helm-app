@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import $ from 'angular';
 import {dscpTypeAheadOptions} from "../../lib/tos_helper";
-import {ecnTypeAheadOptions} from "src/lib/tos_helper";
 
 let index = [];
 let categories = {
@@ -77,21 +76,6 @@ addFuncDef({
 });
 
 addFuncDef({
-  name: 'withEcn',
-  category: categories.Filter,
-  cardinality: Cardinality.MULTIPLE,
-  params: [{
-    name: "ecn",
-    type: "string",
-    options: (input, ctx) => {
-      return ctx.client
-          .getEcnValues(ctx.getNodeCriteria(), ctx.getInterfaceId(), ctx.getStartTime(), ctx.getEndTime())
-          .then(codes => ecnTypeAheadOptions(codes).filter(str => str.toUpperCase().startsWith(input.toUpperCase())));
-    }
-  }]
-});
-
-addFuncDef({
   name: 'withApplication',
   category: categories.Filter,
   mutuallyExcludes: ['topN'],
@@ -101,7 +85,7 @@ addFuncDef({
     type: "string",
     options: (input, ctx) => {
       return ctx.client.getApplications(input, ctx.getStartTime(), ctx.getEndTime(), ctx.getNodeCriteria(),
-          ctx.getInterfaceId(), ctx.getTosByte(), ctx.getDscp(), ctx.getEcn());
+          ctx.getInterfaceId(), ctx.getDscp());
     }
   }]
 });
@@ -116,7 +100,7 @@ addFuncDef({
     type: "string",
     options: (input, ctx) => {
       return ctx.client.getHosts(input, ctx.getStartTime(), ctx.getEndTime(), ctx.getNodeCriteria(),
-          ctx.getInterfaceId(), ctx.getTosByte(), ctx.getDscp(), ctx.getEcn());
+          ctx.getInterfaceId(), ctx.getDscp());
     }
   }]
 });
@@ -223,7 +207,8 @@ FuncInstance.prototype.render = function (/* metricExp */) {
       let paramType = this.def.params[index].type;
       if (paramType === 'int' || paramType === 'value_or_series' || paramType === 'boolean') {
         return value;
-      } else if (paramType === 'int_or_interval' && $.isNumeric(value)) {
+      }
+      else if (paramType === 'int_or_interval' && $.isNumeric(value)) {
         return value;
       }
       return value;
@@ -251,7 +236,8 @@ FuncInstance.prototype.updateParam = function (strValue, index) {
 
   if (strValue === '' && this.def.params[index].optional) {
     this.params.splice(index, 1);
-  } else {
+  }
+  else {
     this.params[index] = strValue;
   }
 

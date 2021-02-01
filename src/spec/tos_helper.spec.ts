@@ -1,4 +1,4 @@
-import {dscpTypeAheadOptions, ecnTypeAheadOptions} from '../lib/tos_helper'
+import {dscpTypeAheadOptions} from '../lib/tos_helper'
 import {expect} from 'chai'
 
 describe('TosHelper', () => {
@@ -52,21 +52,6 @@ describe('TosHelper', () => {
         })
         it('for two codes', () => {
             checkSingleTwoCodes(cases, dscpTypeAheadOptions)
-        })
-    })
-
-    describe('ecn options', () => {
-        const cases: [number, string[]][] = [
-            [0, ['Non-ECT']],
-            [1, ['ECT']],
-            [2, ['ECT']],
-            [3, ['CE']],
-        ]
-        it('for single code', () => {
-            checkSingleCodes(cases, ecnTypeAheadOptions)
-        })
-        it('for two codes', () => {
-            checkSingleTwoCodes(cases, ecnTypeAheadOptions)
         })
     })
 

@@ -104,12 +104,6 @@
               ]
             },
             {
-              "name": "withEcn",
-              "parameters": [
-                "$ecn"
-              ]
-            },
-            {
               "name": "perSecond",
               "parameters": []
             }
@@ -317,12 +311,6 @@
               "name": "withDscp",
               "parameters": [
                 "$dscp"
-              ]
-            },
-            {
-              "name": "withEcn",
-              "parameters": [
-                "$ecn"
               ]
             },
             {
@@ -634,12 +622,6 @@
                   ]
                 },
                 {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
-                  ]
-                },
-                {
                   "name": "withIfIndex",
                   "parameters": [
                     "$interface"
@@ -849,12 +831,6 @@
                   ]
                 },
                 {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
-                  ]
-                },
-                {
                   "name": "asTableSummary",
                   "parameters": []
                 }
@@ -952,12 +928,6 @@
                   "name": "withDscp",
                   "parameters": [
                     "$dscp"
-                  ]
-                },
-                {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
                   ]
                 },
                 {
@@ -1189,12 +1159,6 @@
                   ]
                 },
                 {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
-                  ]
-                },
-                {
                   "name": "asTableSummary",
                   "parameters": []
                 }
@@ -1285,12 +1249,6 @@
                   "name": "withDscp",
                   "parameters": [
                     "$dscp"
-                  ]
-                },
-                {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
                   ]
                 },
                 {
@@ -1516,12 +1474,6 @@
                   ]
                 },
                 {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
-                  ]
-                },
-                {
                   "name": "asTableSummary",
                   "parameters": []
                 }
@@ -1536,333 +1488,6 @@
         }
       ],
       "title": "DSCPs",
-      "type": "row"
-    },
-    {
-      "collapsed": true,
-      "datasource": null,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
-      "id": 21,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": true,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "$flowds",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 14,
-            "x": 0,
-            "y": 6
-          },
-          "hiddenSeries": false,
-          "id": 22,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": false,
-            "max": true,
-            "min": true,
-            "show": true,
-            "sort": "avg",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "7.2.0",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "functions": [
-                {
-                  "name": "withExporterNode",
-                  "parameters": [
-                    "$node"
-                  ]
-                },
-                {
-                  "name": "withDscp",
-                  "parameters": [
-                    "$dscp"
-                  ]
-                },
-                {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
-                  ]
-                },
-                {
-                  "name": "withIfIndex",
-                  "parameters": [
-                    "$interface"
-                  ]
-                },
-                {
-                  "name": "perSecond",
-                  "parameters": []
-                }
-              ],
-              "metric": "ecns",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Throughput by ECN",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "Bps",
-              "label": "bytes/sec",
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "columns": [],
-          "datasource": "$flowds",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
-          "fontSize": "100%",
-          "gridPos": {
-            "h": 8,
-            "w": 10,
-            "x": 14,
-            "y": 6
-          },
-          "id": 23,
-          "links": [],
-          "pageSize": 5,
-          "scroll": false,
-          "showHeader": true,
-          "sort": {
-            "col": 7,
-            "desc": true
-          },
-          "styles": [
-            {
-              "alias": "Time",
-              "align": "auto",
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "pattern": "Time",
-              "type": "date"
-            },
-            {
-              "alias": "",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "Protocol",
-              "thresholds": [],
-              "type": "hidden",
-              "unit": "short"
-            },
-            {
-              "alias": "",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "Location",
-              "thresholds": [],
-              "type": "hidden",
-              "unit": "short"
-            },
-            {
-              "alias": "S.Prt",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 0,
-              "pattern": "Source Port",
-              "thresholds": [],
-              "type": "number",
-              "unit": "none"
-            },
-            {
-              "alias": "D.Prt",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 0,
-              "pattern": "Dest. Port",
-              "thresholds": [],
-              "type": "number",
-              "unit": "none"
-            },
-            {
-              "alias": "In",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "Bytes In",
-              "thresholds": [],
-              "type": "number",
-              "unit": "decbytes"
-            },
-            {
-              "alias": "Out",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "dateFormat": "YYYY-MM-DD HH:mm:ss",
-              "decimals": 2,
-              "pattern": "Bytes Out",
-              "thresholds": [],
-              "type": "number",
-              "unit": "decbytes"
-            },
-            {
-              "alias": "",
-              "align": "auto",
-              "colorMode": null,
-              "colors": [
-                "rgba(245, 54, 54, 0.9)",
-                "rgba(237, 129, 40, 0.89)",
-                "rgba(50, 172, 45, 0.97)"
-              ],
-              "decimals": 2,
-              "pattern": "/.*/",
-              "thresholds": [],
-              "type": "number",
-              "unit": "short"
-            }
-          ],
-          "targets": [
-            {
-              "functions": [
-                {
-                  "name": "withExporterNode",
-                  "parameters": [
-                    "$node"
-                  ]
-                },
-                {
-                  "name": "withIfIndex",
-                  "parameters": [
-                    "$interface"
-                  ]
-                },
-                {
-                  "name": "withDscp",
-                  "parameters": [
-                    "$dscp"
-                  ]
-                },
-                {
-                  "name": "withEcn",
-                  "parameters": [
-                    "$ecn"
-                  ]
-                },
-                {
-                  "name": "asTableSummary",
-                  "parameters": []
-                }
-              ],
-              "metric": "ecns",
-              "refId": "A"
-            }
-          ],
-          "title": "Data Usage by ECN",
-          "transform": "table",
-          "type": "table-old"
-        }
-      ],
-      "title": "ECNs",
       "type": "row"
     }
   ],
@@ -1946,28 +1571,6 @@
         "name": "dscp",
         "options": [],
         "query": "dscpOnExporterNodeAndInterface($node, $interface, $__from, $__to)",
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": "all",
-        "current": {},
-        "datasource": "$flowds",
-        "definition": "ecnOnExporterNodeAndInterface($node, $interface, $__from, $__to)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "ECN",
-        "multi": true,
-        "name": "ecn",
-        "options": [],
-        "query": "ecnOnExporterNodeAndInterface($node, $interface, $__from, $__to)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,

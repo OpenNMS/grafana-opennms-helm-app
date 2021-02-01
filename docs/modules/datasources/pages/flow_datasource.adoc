@@ -99,27 +99,6 @@ Assuming that the `$node` variable is populated with a value from the `exporterN
 ```
 dscpOnExporterNodeAndInterface($node, $interface, $__from, $__to)
 ```
-
-=== ecnOnExporterNodeAndInterface
-
-The `ecnOnExporterNodeAndInterface()` query will return a list of ECN values which are used by one or more flows on the given node and interface
-and given time range. The query returns selection options for the found ECN values.
-
-The available arguments are as follows:
-[options="header, autowidth"]
-|===
-| Name                 | Default     | Description
-| nodeCriteria         | `(none)`    | Node criteria (Node ID, or Node Foreign Souce and Node Foreign ID) of the node on which to enumerate.
-| interface            | `(none)`    | Interface Index of the SNMP interface to enumerate.
-| from                 | `(none)`    | Start time in epoche millis
-| to                   | `(none)`    | End time in epoche millis
-|===
-
-Assuming that the `$node` variable is populated with a value from the `exporterNodesWithFlows` query and that the `$interface` variable is populated with a value from the `interfacesOnExporterNodeWithFlows($node)` query, you can use the following expression:
-```
-ecnOnExporterNodeAndInterface($node, $interface, $__from, $__to)
-```
-
 == Limitations
 
 The flow datasource only supports a single query per panel.
