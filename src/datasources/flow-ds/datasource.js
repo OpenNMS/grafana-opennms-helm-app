@@ -211,25 +211,18 @@ export class FlowDatasource {
     }
     query = this.templateSrv.replace(query);
 
-    let exporterNodesRegex = /exporterNodesWithFlows\(\s*([^,]+),\s*([^\s]+\s*)\)/;
-    let interfacesOnExporterNodeRegex = /interfacesOnExporterNodeWithFlows\(\s*([^,]+),\s*([^,]+),\s*([^\s]+\s*)\)/;
+    let exporterNodesRegex = /exporterNodesWithFlows\((.*)\)/;
+    let interfacesOnExporterNodeRegex = /interfacesOnExporterNodeWithFlows\(\s*([^,]+).*\)/; // just pick the first arg and ignore anything else
     let dscpOnExporterNodeAndInterfaceRegex = /dscpOnExporterNodeAndInterface\(\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^\s]+\s*)\)/;
 
     let exporterNodesQuery = query.match(exporterNodesRegex);
     if (exporterNodesQuery) {
-      return this.metricFindExporterNodes(
-          exporterNodesQuery[1], // start millis
-          exporterNodesQuery[2], // end millis
-      );
+      return this.metricFindExporterNodes();
     }
 
     let interfacesOnExporterNodeQuery = query.match(interfacesOnExporterNodeRegex);
     if (interfacesOnExporterNodeQuery) {
-      return this.metricFindInterfacesOnExporterNode(
-          interfacesOnExporterNodeQuery[1], // node
-          interfacesOnExporterNodeQuery[2], // start millis
-          interfacesOnExporterNodeQuery[3], // end millis
-      );
+      return this.metricFindInterfacesOnExporterNode(interfacesOnExporterNodeQuery[1]);
     }
 
     let dscpOnExporterNodeAndInterfaceQuery = query.match(dscpOnExporterNodeAndInterfaceRegex);
@@ -245,8 +238,8 @@ export class FlowDatasource {
     return this.$q.resolve([]);
   }
 
-  metricFindExporterNodes(start, end) {
-    return this.client.getExporters(start, end).then(exporters => {
+  metricFindExporterNodes(/* query */) {
+    return this.client.getExporters().then(exporters => {
       let results = [];
       _.each(exporters, function (exporter) {
         results.push({text: exporter.label, value: exporter.id, expandable: true});
@@ -255,8 +248,8 @@ export class FlowDatasource {
     });
   }
 
-  metricFindInterfacesOnExporterNode(query, start, end) {
-    return this.client.getExporter(query, start, end).then(exporter => {
+  metricFindInterfacesOnExporterNode(query) {
+    return this.client.getExporter(query).then(exporter => {
       let results = [];
       _.each(exporter.interfaces, function (iff) {
         results.push({text: iff.name + "(" + iff.index + ")", value: iff.index, expandable: true});
@@ -299,13 +292,13 @@ export class FlowDatasource {
       table.rows = _.map(table.rows, (row) => {
         let label;
         switch(row[ecnIndex]) {
-          // all flows used enc capable transports / no congestions were reported
+          // all flows used ecn capable transports / no congestions were reported
           case 0: label = 'ect / no ce'; break;
-          // at least some flows used non-enc-capable-transports / no congestions were reported
+          // at least some flows used non-ecn-capable transports / no congestions were reported
           case 1: label = 'non-ect / no ce'; break;
-          // all flows used enc capable transports / congestions were reported
+          // all flows used ecn capable transports / congestions were reported
           case 2: label = 'ect / ce'; break;
-          // at least some flows used non-enc-capable-transports / congestions were reported
+          // at least some flows used non-ecn-capable transports / congestions were reported
           case 3: label = 'non-ect / ce'; break;
         }
         if (label) {
