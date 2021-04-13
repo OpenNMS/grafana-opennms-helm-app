@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import {ClientDelegate} from 'src/lib/client_delegate';
-import {processSelectionVariables} from "src/lib/utils2";
-import {dscpLabel, dscpSelectOptions} from "src/lib/tos_helper";
+import {ClientDelegate} from '../../lib/client_delegate';
+import {processSelectionVariables} from "../../lib/utils2";
+import {dscpLabel, dscpSelectOptions} from "../../lib/tos_helper";
 import kbn from 'app/core/utils/kbn';
 
 export function intervalToMs(arg) {
