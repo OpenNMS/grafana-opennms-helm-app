@@ -18,6 +18,7 @@
     "@grafana/data": "^7.5.3",
     "@grafana/toolkit": "latest",
     "@grafana/ui": "^7.5.3",
+    "@types/grafana": "github:CorpGlory/types-grafana.git",
     "@types/jest": "^26.0.22",
     "@types/jquery": "^3.5.5",
     "commander": "^4.0.0",

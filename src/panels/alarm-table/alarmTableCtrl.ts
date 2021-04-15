@@ -1,21 +1,20 @@
 import _ from 'lodash';
 import $ from 'jquery';
 
-import {isTableData} from '@grafana/data';
-import {MetricsPanelCtrl} from 'app/plugins/sdk';
+import { dateTimeAsMoment, isDateTime, isTableData } from '@grafana/data';
+import { MetricsPanelCtrl } from 'grafana/app/plugins/sdk';
 
-import {config} from '@grafana/runtime';
-import {transformDataToTable} from './transformers';
-import {tablePanelEditor} from './editor';
-import {columnOptionsTab} from './column_options';
-import {TableRenderer} from './renderer';
-import {SelectionMgr} from "./selection_mgr";
-import {ActionMgr} from "./action_mgr";
+import { config } from '@grafana/runtime';
+import { transformDataToTable } from './transformers';
+import { tablePanelEditor } from './editor';
+import { columnOptionsTab } from './column_options';
+import { TableRenderer } from './renderer';
+import { SelectionMgr } from './selection_mgr';
+import { ActionMgr } from './action_mgr';
 
 import { grafanaResource } from '../../lib/grafana_resource';
 const PanelEvents = grafanaResource('PanelEvents');
 
-import moment from 'moment';
 import * as XLSX from 'xlsx';
 
 export const defaultColors = ['rgba(245, 54, 54, 0.9)', 'rgba(237, 129, 40, 0.89)', 'rgba(50, 172, 45, 0.97)'];
@@ -100,8 +99,36 @@ const styles = {
 };
 
 class AlarmTableCtrl extends MetricsPanelCtrl {
+  static templateUrl = 'panels/alarm-table/module.html';
+
+  $rootScope: any;
+  annotationsSrv: any;
+  $compile: any;
+  $sanitize: any;
+  variableSrv: any;
+  selectionMgr: any;
+  pageIndex: number;
+  backendSrv: any;
+  table: any;
+  dataRaw: any;
+  newDataRaw: any;
+  renderer: any;
+  appConfig: any;
+  clicks: any;
+
   /** @ngInject */
-  constructor($scope, $injector, $rootScope, annotationsSrv, $sanitize, $compile, backendSrv, datasourceSrv, templateSrv, timeSrv) {
+  constructor(
+    $scope,
+    $injector,
+    $rootScope,
+    annotationsSrv,
+    $sanitize,
+    $compile,
+    backendSrv,
+    datasourceSrv,
+    templateSrv,
+    timeSrv
+  ) {
     super($scope, $injector);
     this.$rootScope = $rootScope;
     this.annotationsSrv = annotationsSrv;
@@ -136,45 +163,45 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
         styles.defaultString,
       ],
       columns: [
-          {
-            title: 'Ack',
-            text: 'Is Acknowledged',
-            style: styles.ack,
-          },
-          {
-            title: 'Severity',
-            text: 'Severity',
-            style: styles.severity,
-          },
-          {
-            title: 'Count',
-            text: 'Count',
-            style: styles.count,
-          },
-          {
-            title: 'Last Occurrence',
-            text: 'Last Event Time',
-            style: styles.lastEventTime,
-          },
-          {
-            title: 'Location',
-            text: 'Location',
-            style: styles.location,
-          },
-          {
-            title: 'Node',
-            text: 'Node Label',
-            style: styles.node,
-          },
-          {
-            title: 'Message',
-            text: 'Log Message',
-            style: styles.logMessage,
-          },
-        ],
+        {
+          title: 'Ack',
+          text: 'Is Acknowledged',
+          style: styles.ack,
+        },
+        {
+          title: 'Severity',
+          text: 'Severity',
+          style: styles.severity,
+        },
+        {
+          title: 'Count',
+          text: 'Count',
+          style: styles.count,
+        },
+        {
+          title: 'Last Occurrence',
+          text: 'Last Event Time',
+          style: styles.lastEventTime,
+        },
+        {
+          title: 'Location',
+          text: 'Location',
+          style: styles.location,
+        },
+        {
+          title: 'Node',
+          text: 'Node Label',
+          style: styles.node,
+        },
+        {
+          title: 'Message',
+          text: 'Log Message',
+          style: styles.logMessage,
+        },
+      ],
       scroll: false, // disable scrolling as the actions popup is not working properly otherwise
       fontSize: '100%',
-      sort: {col: 3, desc: true},
+      sort: { col: 3, desc: true },
       severity: 'column',
     };
 
@@ -203,12 +230,18 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     }
 
     let self = this;
-    this.selectionMgr = new SelectionMgr((from,to) => self.getRowsInRange(from,to), () => self.render());
-    this.events.on(PanelEvents ? PanelEvents.dataReceived        : 'data-received', this.onDataReceived.bind(this));
-    this.events.on(PanelEvents ? PanelEvents.dataError           : 'data-error', this.onDataError.bind(this));
-    this.events.on(PanelEvents ? PanelEvents.dataSnapshotLoad    : 'data-snapshot-load', this.onDataReceived.bind(this));
+    this.selectionMgr = new SelectionMgr(
+      (from, to) => self.getRowsInRange(from, to),
+      () => self.render()
+    );
+    this.events.on(PanelEvents ? PanelEvents.dataReceived : 'data-received', this.onDataReceived.bind(this));
+    this.events.on(PanelEvents ? PanelEvents.dataError : 'data-error', this.onDataError.bind(this));
+    this.events.on(PanelEvents ? PanelEvents.dataSnapshotLoad : 'data-snapshot-load', this.onDataReceived.bind(this));
     this.events.on(PanelEvents ? PanelEvents.editModeInitialized : 'init-edit-mode', this.onInitEditMode.bind(this));
-    this.events.on(PanelEvents ? PanelEvents.initPanelActions    : 'init-panel-actions', this.onInitPanelActions.bind(this));
+    this.events.on(
+      PanelEvents ? PanelEvents.initPanelActions : 'init-panel-actions',
+      this.onInitPanelActions.bind(this)
+    );
 
     if (this.panel.severity === true) {
       this.panel.severity = 'row';
@@ -222,7 +255,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
       this.panel.styles.unshift({
         type: 'severity',
         pattern: 'Severity',
-        displayAs: 'icon'
+        displayAs: 'icon',
       });
       this.panel.columns.unshift({
         hidden: false,
@@ -231,8 +264,8 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
         style: {
           type: 'severity',
           pattern: 'Severity',
-          displayAs: 'icon'
-        }
+          displayAs: 'icon',
+        },
       });
       if (this.table && this.table.rows) {
         // put a placeholder value in until data refreshes
@@ -247,7 +280,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
   refreshAppConfig() {
     const self = this;
-    self.backendSrv.get('api/plugins/opennms-helm-app/settings').then(result => {
+    self.backendSrv.get('api/plugins/opennms-helm-app/settings').then((result) => {
       if (result && result.jsonData) {
         self.appConfig = result.jsonData;
       } else {
@@ -263,20 +296,22 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
   onInitPanelActions(actions) {
     actions.push({ text: 'Export CSV', click: 'ctrl.exportCSV()' });
-    actions.push({ text: 'Export Excel', click: 'ctrl.exportExcel()' })
+    actions.push({ text: 'Export Excel', click: 'ctrl.exportExcel()' });
   }
 
   issueQueries(datasource) {
     if (this.panel.transform === 'annotations') {
-      if (this.setTimeQueryStart) this.setTimeQueryStart();
+      if (this.setTimeQueryStart) {
+        this.setTimeQueryStart();
+      }
       return this.annotationsSrv
         .getAnnotations({
           dashboard: this.dashboard,
           panel: this.panel,
           range: this.range,
         })
-        .then(annotations => {
-          return {data: annotations};
+        .then((annotations) => {
+          return { data: annotations };
         });
     }
 
@@ -337,7 +372,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
       this.$sanitize,
       this.selectionMgr,
       this.templateSrv,
-      config.theme.type,
+      config.theme.type
     );
 
     return super.render(this.table);
@@ -347,7 +382,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     const workbook = XLSX.utils.book_new();
     workbook.Props = {
       Title: this.panel.title,
-    }
+    };
 
     const columns = this.table.columns.map((col) => {
       return col.text;
@@ -355,8 +390,8 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     const rows = this.table.rows.map((row) => {
       const ret = {};
       row.forEach((col, index) => {
-        if (moment.isMoment(col) || col instanceof Date) {
-          ret[columns[index]] = moment(col).format('YYYY-MM-DD HH:mm:ss.SSS');
+        if (isDateTime(col)) {
+          ret[columns[index]] = dateTimeAsMoment(col).format('YYYY-MM-DD HH:mm:ss.SSS');
         } else {
           ret[columns[index]] = col;
         }
@@ -364,7 +399,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
       return ret;
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(rows, {header:columns});
+    const worksheet = XLSX.utils.json_to_sheet(rows, { header: columns });
     XLSX.utils.book_append_sheet(workbook, worksheet, this.panel.title);
     return workbook;
   }
@@ -402,12 +437,13 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     let data;
     const panel = ctrl.panel;
     let pageCount = 0;
+    let self = this;
 
     scope.getColumnStyle = (col) => {
       const ret = {};
       if (col && col.style) {
         if (col.style.width !== undefined) {
-          ret.width = col.style.width;
+          ret['width'] = col.style.width;
           if (col.style.clip) {
             ret['max-width'] = col.style.width;
             ret['white-space'] = 'nowrap';
@@ -429,7 +465,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
         panelHeight -= 26;
       }
 
-      return (panelHeight - 31) + 'px';
+      return panelHeight - 31 + 'px';
     }
 
     function appendTableRows(tbodyElem) {
@@ -469,7 +505,11 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
       }
 
       if (ctrl.newDataRaw) {
-        paginationList.append($('<li><a class="table-panel-page-refresh pointer" name="refresh"><i class="fa fa-refresh" aria-hidden="true"></i> refresh</a></li>'));
+        paginationList.append(
+          $(
+            '<li><a class="table-panel-page-refresh pointer" name="refresh"><i class="fa fa-refresh" aria-hidden="true"></i> refresh</a></li>'
+          )
+        );
       }
       footerElem.append(paginationList);
     }
@@ -477,20 +517,20 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     function refreshData() {
       ctrl.refreshData();
     }
-  
+
     function renderPanel() {
       const panelElem = elem.parents('.panel-content');
       const rootElem = elem.find('.table-panel-scroll');
       const tbodyElem = elem.find('tbody');
       const footerElem = elem.find('.table-panel-footer .pagination');
 
-      elem.css({'font-size': panel.fontSize});
+      elem.css({ 'font-size': panel.fontSize });
       panelElem.addClass('table-panel-content');
 
       appendTableRows(tbodyElem);
       appendPaginationControls(footerElem);
 
-      rootElem.css({'max-height': panel.scroll ? getTableHeight() : ''});
+      rootElem.css({ 'max-height': panel.scroll ? getTableHeight() : '' });
     }
 
     // hook up link tooltips
@@ -499,11 +539,14 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     });
 
     function setFilter(options) {
-      if (this.variableSrv) {
+      if (self.variableSrv) {
         ctrl.variableSrv.setAdhocFilter(options);
       } else {
         // assume grafana 7+
-        this.$rootScope.appEvent('alert-error', ['Ad-Hoc Filters Not Supported', 'Ad-hoc alarm table filters are not supported on Grafana 7.']);
+        self.$rootScope.appEvent('alert-error', [
+          'Ad-Hoc Filters Not Supported',
+          'Ad-hoc alarm table filters are not supported on Grafana 7.',
+        ]);
       }
     }
 
@@ -530,7 +573,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
       unbindDestroy();
     });
 
-    ctrl.events.on(PanelEvents ? PanelEvents.render : 'render', renderData => {
+    ctrl.events.on(PanelEvents ? PanelEvents.render : 'render', (renderData) => {
       data = renderData || data;
       if (data) {
         renderPanel();
@@ -544,10 +587,10 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
   findRowAndMeta(source, alarmId) {
     let matchedRow;
     let matchedMeta;
-    _.each(this.dataRaw, table => {
+    _.each(this.dataRaw, (table) => {
       if (table.meta && table.meta.entity_metadata) {
-        const rowIdx = _.findIndex(table.meta.entity_metadata, meta => {
-          return meta.source === source && meta.alarm.id === alarmId;
+        const rowIdx = _.findIndex(table.meta.entity_metadata, (meta) => {
+          return (meta as any).source === source && (meta as any).alarm.id === alarmId;
         });
         const filteredRow = table.rows[rowIdx];
         if (filteredRow !== undefined) {
@@ -567,10 +610,12 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
   getContextMenu($event, source, alarmId) {
     // Treat the right click as a left click on the row, if the row is not part of the current selection
-    if (!this.selectionMgr.isRowSelected({
+    if (
+      !this.selectionMgr.isRowSelected({
         source: source,
-        alarmId: alarmId
-      })) {
+        alarmId: alarmId,
+      })
+    ) {
       this.onSingleClick($event, source, alarmId);
     }
 
@@ -579,18 +624,18 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
     // Load up the actual alarms in the rows
     let self = this;
-    selectedRows = _.map(selectedRows, row => {
+    selectedRows = _.map(selectedRows, (row) => {
       // Create new objects instead of modifying the existing rows
       // returned by SelectionMgr#getSelectedRows()
       const tableRow = self.findRowAndMeta(row.source, row.alarmId);
       return Object.assign({}, row, {
         alarm: tableRow && tableRow.meta ? tableRow.meta.alarm : undefined,
-        ticketerConfig: tableRow && tableRow.meta ? tableRow.meta.ticketerConfig : undefined
+        ticketerConfig: tableRow && tableRow.meta ? tableRow.meta.ticketerConfig : undefined,
       });
     });
 
     // Filter out any rows for which we couldn't find the alarm
-    selectedRows = _.filter(selectedRows, row => row.alarm !== void 0);
+    selectedRows = _.filter(selectedRows, (row) => row.alarm !== void 0);
 
     // Generate selection-based context menu
     return new ActionMgr(this, selectedRows, this.appConfig).getContextMenu();
@@ -648,7 +693,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     } else {
       // no previous click record, create a fresh one and schedule a click check
       self.clicks[alarmId] = {
-        timeout: undefined
+        timeout: undefined,
       };
       self.scheduleClickCheck(thisEvent, source, alarmId, now);
     }
@@ -658,10 +703,10 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
   }
 
   onSingleClick($event, source, alarmId) {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC')>=0;
-    const exclusiveModifier = isMac? $event.metaKey : $event.ctrlKey;
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const exclusiveModifier = isMac ? $event.metaKey : $event.ctrlKey;
     const rangeModifier = $event.shiftKey;
-    this.selectionMgr.handleRowClick({source: source, alarmId: alarmId}, exclusiveModifier, rangeModifier);
+    this.selectionMgr.handleRowClick({ source: source, alarmId: alarmId }, exclusiveModifier, rangeModifier);
   }
 
   onDoubleClick($event, source, alarmId) {
@@ -686,39 +731,46 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
     this.$rootScope.appEvent('show-modal', {
       templateHtml: '<alarm-details-as-modal dismiss="dismiss()"></alarm-details-as-modal>',
-      scope: newScope
+      scope: newScope,
     });
   }
 
   performAlarmActionOnDatasource(source, action, alarmId) {
     let self = this;
-    
-    return new Promise((resolve, reject) => {
-      this.datasourceSrv.get(source).then(ds => {
-        if (ds.type && ds.type.indexOf("entity-datasource") < 0) {
-          throw {message: 'Only OpenNMS datasources are supported'};
-        } 
-        else {
-          if (!ds[action]) {
-            throw {message: 'Action ' + action + ' not implemented by datasource ' + ds.name + " of type " + ds.type};
-          }
 
-          var actionPerfomed = ds[action](alarmId);
-          actionPerfomed.then((successObj) => {
-            resolve(successObj);
-          }, (error) => {
-            reject(error);
-          });
-        }
-      }).catch(err => {
-        self.error = err.message || "Request Error";
-        reject(err);
-      });
-    })
+    return new Promise((resolve, reject) => {
+      this.datasourceSrv
+        .get(source)
+        .then((ds) => {
+          if (ds.type && ds.type.indexOf('entity-datasource') < 0) {
+            throw { message: 'Only OpenNMS datasources are supported' };
+          } else {
+            if (!ds[action]) {
+              throw {
+                message: 'Action ' + action + ' not implemented by datasource ' + ds.name + ' of type ' + ds.type,
+              };
+            }
+
+            var actionPerfomed = ds[action](alarmId);
+            actionPerfomed.then(
+              (successObj) => {
+                resolve(successObj);
+              },
+              (error) => {
+                reject(error);
+              }
+            );
+          }
+        })
+        .catch((err) => {
+          self.error = err.message || 'Request Error';
+          reject(err);
+        });
+    });
   }
 
   /* Refreshing Dashboard Panel */
-  refreshDashboard(){
+  refreshDashboard() {
     this.timeSrv.refreshDashboard();
   }
 
@@ -731,7 +783,7 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
   }
 
   clearAlarm(source, alarmId) {
-    return this.performAlarmActionOnDatasource(source, 'clearAlarm', alarmId)
+    return this.performAlarmActionOnDatasource(source, 'clearAlarm', alarmId);
   }
 
   escalateAlarm(source, alarmId) {
@@ -752,18 +804,20 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
   // Multi-select handling
   getRowsInRange(from, to) {
-    let rows = [];
+    let rows: any[] = [];
     if (!this.table) {
       return rows;
     }
 
-    let findIdx = selectionToMatch => {
+    let findIdx = (selectionToMatch) => {
       if (this.table && this.table.meta && this.table.meta.entity_metadata) {
-        return _.findIndex(this.table.meta.entity_metadata, meta => {
-          return meta.source === selectionToMatch.source && meta.alarm.id === selectionToMatch.alarmId;
+        return _.findIndex(this.table.meta.entity_metadata, (meta) => {
+          return (
+            (meta as any).source === selectionToMatch.source && (meta as any).alarm.id === selectionToMatch.alarmId
+          );
         });
       }
-      return undefined;
+      return -1;
     };
 
     let startIdx = findIdx(from);
@@ -778,21 +832,18 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
 
     if (endIdx < startIdx) {
       // Swap
-      [startIdx,endIdx] = [endIdx,startIdx];
+      [startIdx, endIdx] = [endIdx, startIdx];
     }
 
     for (let i = startIdx; i <= endIdx; i++) {
       const meta = this.table.meta && this.table.meta.entity_metadata ? this.table.meta.entity_metadata[i] : {};
       rows.push({
         source: meta.source,
-        alarmId: meta.alarm.id
+        alarmId: meta.alarm.id,
       });
     }
     return rows;
   }
 }
 
-AlarmTableCtrl.templateUrl = 'panels/alarm-table/module.html';
-
 export { AlarmTableCtrl };
-
