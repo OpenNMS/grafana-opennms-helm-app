@@ -1,10 +1,10 @@
+// @ts-ignore
 import angular from 'angular';
 import _ from 'lodash';
 
-import coreModule from 'app/core/core_module';
+import coreModule from 'grafana/app/core/core_module';
 
 export class OnmsValueSelectDropdownCtrl {
-  /*
   dropdownVisible: any;
   highlightIndex: any;
   linkText: any;
@@ -18,7 +18,7 @@ export class OnmsValueSelectDropdownCtrl {
 
   hide: any;
   onUpdated: any;
-  */
+  private $q: any;
 
   /** @ngInject */
   constructor($q) {
@@ -32,9 +32,9 @@ export class OnmsValueSelectDropdownCtrl {
     this.options = this.variable.options;
     this.selectedValues = _.filter(this.options, { selected: true });
 
-    this.tags = _.map(this.variable.tags, value => {
+    this.tags = _.map(this.variable.tags, (value) => {
       let tag = { text: value, selected: false };
-      _.each(this.variable.current.tags, tagObj => {
+      _.each(this.variable.current.tags, (tagObj) => {
         if (tagObj.text === value) {
           tag = tagObj;
         }
@@ -55,7 +55,7 @@ export class OnmsValueSelectDropdownCtrl {
 
     if (current.tags && current.tags.length) {
       // filer out values that are in selected tags
-      const selectedAndNotInTag = _.filter(this.variable.options, option => {
+      const selectedAndNotInTag = _.filter(this.variable.options, (option) => {
         if (!option.selected) {
           return false;
         }
@@ -85,11 +85,11 @@ export class OnmsValueSelectDropdownCtrl {
     this.selectedValues = _.filter(this.options, { selected: true });
 
     if (this.selectedValues.length > 1) {
-      _.each(this.options, option => {
+      _.each(this.options, (option) => {
         option.selected = false;
       });
     } else {
-      _.each(this.search.options, option => {
+      _.each(this.search.options, (option) => {
         option.selected = true;
       });
     }
@@ -105,10 +105,10 @@ export class OnmsValueSelectDropdownCtrl {
       tagValuesPromise = this.$q.when(tag.values);
     }
 
-    return tagValuesPromise.then(values => {
+    return tagValuesPromise.then((values) => {
       tag.values = values;
       tag.valuesText = values.join(' + ');
-      _.each(this.options, option => {
+      _.each(this.options, (option) => {
         if (_.indexOf(tag.values, option.value) !== -1) {
           option.selected = tag.selected;
         }
@@ -155,7 +155,7 @@ export class OnmsValueSelectDropdownCtrl {
     excludeOthers = excludeOthers || false;
 
     const setAllExceptCurrentTo = (newValue) => {
-      _.each(this.options, other => {
+      _.each(this.options, (other) => {
         if (option !== other) {
           other.selected = newValue;
         }
@@ -192,9 +192,9 @@ export class OnmsValueSelectDropdownCtrl {
     }
 
     // validate selected tags
-    _.each(this.tags, tag => {
+    _.each(this.tags, (tag) => {
       if (tag.selected) {
-        _.each(tag.values, value => {
+        _.each(tag.values, (value) => {
           if (!_.find(this.selectedValues, { value: value })) {
             tag.selected = false;
           }
@@ -240,7 +240,7 @@ export class OnmsValueSelectDropdownCtrl {
 
   queryChanged() {
     this.highlightIndex = -1;
-    this.search.options = _.filter(this.options, option => {
+    this.search.options = _.filter(this.options, (option) => {
       return option.text.toLowerCase().indexOf(this.search.query.toLowerCase()) !== -1;
     });
 
@@ -254,7 +254,8 @@ export class OnmsValueSelectDropdownCtrl {
 }
 
 /** @ngInject */
-export function onmsValueSelectDropdown($compile, $window, $timeout, $rootScope) { // eslint-disable-line no-unused-vars
+export function onmsValueSelectDropdown($compile, $window, $timeout, $rootScope) {
+  // eslint-disable-line no-unused-vars
   return {
     scope: { dashboard: '=', variable: '=', onUpdated: '&' },
     templateUrl: 'public/plugins/opennms-helm-app/panels/filter-panel/valueSelectDropdown.html',

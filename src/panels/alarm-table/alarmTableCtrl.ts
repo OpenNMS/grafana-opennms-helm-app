@@ -1,7 +1,8 @@
+/* eslint-disable no-restricted-imports */
 import _ from 'lodash';
 import $ from 'jquery';
 
-import { dateTimeAsMoment, isDateTime, isTableData } from '@grafana/data';
+import { isTableData } from '@grafana/data';
 import { MetricsPanelCtrl } from 'grafana/app/plugins/sdk';
 
 import { config } from '@grafana/runtime';
@@ -15,6 +16,7 @@ import { ActionMgr } from './action_mgr';
 import { grafanaResource } from '../../lib/grafana_resource';
 const PanelEvents = grafanaResource('PanelEvents');
 
+import moment from 'moment';
 import * as XLSX from 'xlsx';
 
 export const defaultColors = ['rgba(245, 54, 54, 0.9)', 'rgba(237, 129, 40, 0.89)', 'rgba(50, 172, 45, 0.97)'];
@@ -390,8 +392,8 @@ class AlarmTableCtrl extends MetricsPanelCtrl {
     const rows = this.table.rows.map((row) => {
       const ret = {};
       row.forEach((col, index) => {
-        if (isDateTime(col)) {
-          ret[columns[index]] = dateTimeAsMoment(col).format('YYYY-MM-DD HH:mm:ss.SSS');
+        if (moment.isMoment(col) || col instanceof Date) {
+          ret[columns[index]] = moment(col).format('YYYY-MM-DD HH:mm:ss.SSS');
         } else {
           ret[columns[index]] = col;
         }

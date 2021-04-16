@@ -1,13 +1,28 @@
-import {FilterColumn} from '../../lib/filter_column';
-import {entityTypes} from '../../datasources/entity-ds/datasource';
+/* eslint-disable no-console, no-eval */
+
+import { FilterColumn } from '../../lib/filter_column';
+import { entityTypes } from '../../datasources/entity-ds/datasource';
 
 import $ from 'jquery';
 
 // Recreated in div#alarm-filter-editor-add-column whenever a column is added to
 // reinitialize the <metric-segment> directive.  See initializeMetricSegment below.
-const metricSegmentHtml = '<metric-segment segment="editor.addColumnSegment" get-options="editor.getColumnOptions()" on-change="editor.addColumn()"></metric-segment>';
+const metricSegmentHtml =
+  '<metric-segment segment="editor.addColumnSegment" get-options="editor.getColumnOptions()" on-change="editor.addColumn()"></metric-segment>';
 
 export class FilterPanelEditorCtrl {
+  $q: any;
+  $scope: any;
+  uiSegmentSrv: any;
+  datasourceSrv: any;
+  panelCtrl: any;
+  panel: any;
+  $compile: any;
+  entityTypes: any;
+  srcIndex: any;
+  destIndex: any;
+  addColumnSegment: any;
+
   /** @ngInject */
   constructor($scope, $q, uiSegmentSrv, datasourceSrv, $compile) {
     this.$q = $q;
@@ -21,7 +36,7 @@ export class FilterPanelEditorCtrl {
     this.$compile = $compile;
 
     this.entityTypes = entityTypes;
-    
+
     if (!$scope.current) {
       $scope.current = {};
     }
@@ -38,8 +53,14 @@ export class FilterPanelEditorCtrl {
     this.initializeMetricSegment();
 
     let editor = document.querySelectorAll('.editor-row')[0];
-    for (const e of [ 'dragstart', 'dragover', 'dragleave', 'drop']) {
-      editor.addEventListener(e, (evt) => { this.handleEvent(e, evt); }, false);
+    for (const e of ['dragstart', 'dragover', 'dragleave', 'drop']) {
+      editor.addEventListener(
+        e,
+        (evt) => {
+          this.handleEvent(e, evt);
+        },
+        false
+      );
     }
 
     $scope.reset = this.reset;
@@ -49,16 +70,19 @@ export class FilterPanelEditorCtrl {
   setDatasource(dsName) {
     const self = this;
     console.debug('Setting datasource to: ' + dsName);
-    return self.getDatasource(dsName).then((ds) => {
-      self.$scope.current.datasource = ds;
-      self.$scope.current.datasourceType = ds.type;
-      return ds;
-    }).catch((err) => {
-      console.warn('Failed to get datasource ' + dsName, err);
-      self.$scope.current.datasource = undefined;
-      self.$scope.current.datasourceType = undefined;
-      return self.$q.reject(err);
-    });
+    return self
+      .getDatasource(dsName)
+      .then((ds) => {
+        self.$scope.current.datasource = ds;
+        self.$scope.current.datasourceType = ds.type;
+        return ds;
+      })
+      .catch((err) => {
+        console.warn('Failed to get datasource ' + dsName, err);
+        self.$scope.current.datasource = undefined;
+        self.$scope.current.datasourceType = undefined;
+        return self.$q.reject(err);
+      });
   }
 
   setEntityType(type) {
@@ -75,12 +99,15 @@ export class FilterPanelEditorCtrl {
       const current = self.$scope.current;
       const dsName = current.datasource && current.datasource.name ? current.datasource.name : undefined;
 
-      self.setDatasource(dsName).then(() => {
-        self.setEntityType(current.entityType);
-        deferred.resolve(self.render());
-      }).catch((err) => {
-        deferred.reject(err);
-      });
+      self
+        .setDatasource(dsName)
+        .then(() => {
+          self.setEntityType(current.entityType);
+          deferred.resolve(self.render());
+        })
+        .catch((err) => {
+          deferred.reject(err);
+        });
     });
     return deferred.promise;
   }
@@ -88,7 +115,7 @@ export class FilterPanelEditorCtrl {
   removeClasses(...classes) {
     for (const c of classes) {
       const cols = document.querySelectorAll('.' + c);
-      [].forEach.call(cols, (col) => {
+      cols.forEach((col) => {
         col.classList.remove(c);
       });
     }
@@ -102,16 +129,22 @@ export class FilterPanelEditorCtrl {
       }
     }
     // dragleave is only fired for the label and not the parent container
-    if (evt.target && evt.target.parent && evt.target.parent.classList && evt.target.parent.classList.contains('column-reorder')) {
+    if (
+      evt.target &&
+      evt.target.parent &&
+      evt.target.parent.classList &&
+      evt.target.parent.classList.contains('column-reorder')
+    ) {
       return evt.target.parent;
     }
   }
 
+  // @ts-ignore
   handleEvent(type, evt) {
     const target = this.getTarget(evt);
     const id = evt.srcElement.id;
 
-    switch(type) {
+    switch (type) {
       case 'dragstart':
         evt.srcElement.classList.add('picked-up');
         evt.dataTransfer.effectAllowed = 'move';
@@ -144,14 +177,12 @@ export class FilterPanelEditorCtrl {
         break;
       case 'dragleave':
         if (target && evt.screenX !== 0 && evt.screenY !== 0) {
-          //const columnIndex = parseInt(target.id.replace(/^column-/, ''), 10);
-          //console.log('leaving ' + this.panel.columns[columnIndex].text);
           this.destIndex = undefined;
           this.removeClasses('over');
         }
         break;
       case 'drop':
-        if (eval.stopPropagation) {
+        if ((eval as any).stopPropagation) {
           evt.stopPropagation();
         }
         if (this.srcIndex !== undefined && this.destIndex !== undefined) {
@@ -159,9 +190,15 @@ export class FilterPanelEditorCtrl {
             this.panel.columns.splice(this.destIndex, 0, this.panel.columns.splice(this.srcIndex, 1)[0]);
             this.render();
           });
-          console.log('dropped "' + this.panel.columns[this.srcIndex].text + '" onto "' + this.panel.columns[this.destIndex].text + '"');
+          console.log(
+            'dropped "' +
+              this.panel.columns[this.srcIndex].text +
+              '" onto "' +
+              this.panel.columns[this.destIndex].text +
+              '"'
+          );
         } else {
-          const targetIndex = (this.srcIndex == undefined) ? 'source' : 'destination';
+          const targetIndex = this.srcIndex === undefined ? 'source' : 'destination';
           console.log(`WARNING: drop event received but ${targetIndex} was unset.`);
         }
         this.removeClasses('over', 'picked-up');
@@ -184,29 +221,32 @@ export class FilterPanelEditorCtrl {
         const entityType = ds.type === 'opennms-helm-entity-datasource' ? $scope.current.entityType : undefined;
 
         const opts = {
-          queryType: 'attributes'
+          queryType: 'attributes',
         };
         if (entityType) {
-          opts.entityType = entityType.id;
+          opts['entityType'] = entityType.id;
         }
-    
-        ds.metricFindQuery(entityType ? entityType.queryFunction + '()' : null, opts).then((res) => {
-          console.debug('getColumnOptions: metricFindQuery result:', res);
-    
-          const data = res && res.data ? res.data : res;
 
-          // filter out columns that have already been selected
-          const filtered = data.filter(a => self.panel.columns.indexOf(a) < 0);
-      
-          const segments = filtered.map(c => self.uiSegmentSrv.newSegment({
-            // datasource: ds.name,
-            value: c.name
-          }));
-      
-          deferred.resolve(segments);
-        }).catch((err) => {
-          deferred.reject(err);
-        });
+        ds.metricFindQuery(entityType ? entityType.queryFunction + '()' : null, opts)
+          .then((res) => {
+            console.debug('getColumnOptions: metricFindQuery result:', res);
+
+            const data = res && res.data ? res.data : res;
+
+            // filter out columns that have already been selected
+            const filtered = data.filter((a) => self.panel.columns.indexOf(a) < 0);
+
+            const segments = filtered.map((c) =>
+              self.uiSegmentSrv.newSegment({
+                value: c.name,
+              })
+            );
+
+            deferred.resolve(segments);
+          })
+          .catch((err) => {
+            deferred.reject(err);
+          });
       });
 
       return deferred.promise;
@@ -226,28 +266,30 @@ export class FilterPanelEditorCtrl {
         const entityType = ds.type === 'opennms-helm-entity-datasource' ? $scope.current.entityType : undefined;
 
         const opts = {
-          queryType: 'attributes'
+          queryType: 'attributes',
         };
         if (entityType) {
-          opts.entityType = entityType.id;
+          opts['entityType'] = entityType.id;
         }
-    
-        ds.metricFindQuery(entityType ? entityType.queryFunction + '()' : null, opts).then((res) => {
-          console.debug('addColumn: metricFindQuery result:', res);
-    
-          const match = res.filter(col => col.name === label)[0];
-          if (match) {
-            const label = match.name;
-            const column = new FilterColumn(label, undefined, ds.name, match.id, 'multi', entityType);
-            console.debug('adding column:', column);
-            self.panel.columns.push(column);
-          }
-      
-          self.initializeMetricSegment();
-          deferred.resolve(self.render());
-        }).catch((err) => {
-          deferred.reject(err);
-        });
+
+        ds.metricFindQuery(entityType ? entityType.queryFunction + '()' : null, opts)
+          .then((res) => {
+            console.debug('addColumn: metricFindQuery result:', res);
+
+            const match = res.filter((col) => col.name === label)[0];
+            if (match) {
+              const label = match.name;
+              const column = new FilterColumn(label, undefined, ds.name, match.id, 'multi', entityType);
+              console.debug('adding column:', column);
+              self.panel.columns.push(column);
+            }
+
+            self.initializeMetricSegment();
+            deferred.resolve(self.render());
+          })
+          .catch((err) => {
+            deferred.reject(err);
+          });
       });
 
       return deferred.promise;
@@ -283,7 +325,7 @@ export class FilterPanelEditorCtrl {
       name: ds.name,
       value: ds.name,
       sort: ds.name,
-      meta: ds
+      meta: ds,
     };
   }
 
@@ -297,7 +339,7 @@ export class FilterPanelEditorCtrl {
   getDatasources() {
     const sources = this.datasourceSrv.getMetricSources();
     const configuredDatasource = this.getConfiguredDatasource();
-    const filtered = sources.filter(ds => {
+    const filtered = sources.filter((ds) => {
       if (configuredDatasource) {
         return ds.name === configuredDatasource;
       }
@@ -334,7 +376,8 @@ export class FilterPanelEditorCtrl {
 }
 
 /** @ngInject */
-export function filterPanelEditor($q, uiSegmentSrv) { // eslint-disable-line no-unused-vars
+export function filterPanelEditor($q, uiSegmentSrv) {
+  // eslint-disable-line no-unused-vars
   'use strict';
   return {
     restrict: 'E',
