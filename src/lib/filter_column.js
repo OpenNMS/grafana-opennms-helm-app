@@ -46,15 +46,6 @@ export class FilterColumn {
       ret = $injector.instantiate(QueryVariable, { model: model, filterColumn: this, filterState: filterState });
     }
 
-    /*
-    if (this.selected) {
-      ret.setValue(this.selected);
-      console.debug('toModel(): selected=', this.selected, this);
-    } else {
-      console.debug('toModel(): nothing selected', this);
-    }
-    */
-
     return ret;
   }
 

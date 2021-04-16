@@ -282,13 +282,6 @@ export function contextMenuAsDirective() {
 
       // Destructuring:
       var options = params.options;
-      /*
-      var $scope = params.$scope;
-      var event = params.event;
-      var modelValue = params.modelValue;
-      var level = params.level;
-      var customClass = params.customClass;
-      */
 
       // Initialize the container. This will be passed around
       var $ul = initContextMenuContainer(params);

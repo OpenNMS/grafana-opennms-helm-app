@@ -63,19 +63,8 @@ export function variableUpdated(variable, emitChangeEvents) {
 
   // in theory we should create an efficient sub-list of variables to update, but for now just do them all YOLO
   variables.forEach(v => promises.push(v.updateOptions()));
-  /*
-  const g = createGraph(getVariables());
-  const node = g.getNode(variable.name);
-  if (node) {
-    promises = node.getOptimizedInputEdges().map(e => {
-      const variable = getVariables().find(v => v.name === e.inputNode.name);
-      return variable.updateOptions();
-    });
-  }
-  */
 
   templateSrv.setGlobalVariable(variable.id, variable.current);
-  //templateSrv.grafanaVariables[variable.id] = variable.current;
 
   return $q.all(promises).then(() => {
     if (emitChangeEvents) {
@@ -210,30 +199,3 @@ export function containsVariable(...args) {
   return !!isMatchingVariable;
 }
 
-/*
-export function setAdhocFilter(options) {
-  let variable = _.find(this.variables, {
-    type: 'adhoc',
-    datasource: options.datasource,
-  });
-  if (!variable) {
-    variable = this.createVariableFromModel({
-      name: 'Filters',
-      type: 'adhoc',
-      datasource: options.datasource,
-    });
-    this.addVariable(variable);
-  }
-
-  const filters = variable.filters;
-  let filter: any = _.find(filters, { key: options.key, value: options.value });
-
-  if (!filter) {
-    filter = { key: options.key, value: options.value };
-    filters.push(filter);
-  }
-
-  filter.operator = options.operator;
-  this.variableUpdated(variable, true);
-}
-*/

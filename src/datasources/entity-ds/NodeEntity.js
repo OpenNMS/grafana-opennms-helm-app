@@ -100,10 +100,10 @@ export default class NodeEntity extends Entity {
           node.netBiosDomain,
           node.operatingSystem,
           node.lastCapsdPoll,
-          /* primarySnmp && primarySnmp.physAddr ? primarySnmp.physAddr.toString() : undefined, */
+          // primarySnmp && primarySnmp.physAddr ? primarySnmp.physAddr.toString() : undefined,
           primarySnmp ? primarySnmp.ifIndex : undefined,
           primaryIpInterface && primaryIpInterface.ipAddress ? primaryIpInterface.ipAddress.correctForm() : undefined,
-          /* primaryIpInterface && primaryIpInterface.ipHostname ? primaryIpInterface.ipHostname : undefined, */
+          // primaryIpInterface && primaryIpInterface.ipHostname ? primaryIpInterface.ipHostname : undefined,
           node.categories ? node.categories.map(cat => cat.name) : undefined,
 
           // Data Source
