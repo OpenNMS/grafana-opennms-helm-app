@@ -32,6 +32,11 @@ fs.mkdirsSync(workdir);
 fs.mkdirsSync(packagedir);
 return copy(path.join(srcdir), workdir, {
   dot: true,
+  filter: [
+    '**/*',
+    '!packages',
+    '!packages/*',
+  ],
   junk: false,
 }).then((results) => {
   console.info(results.length + ' files copied to ' + workdir);
