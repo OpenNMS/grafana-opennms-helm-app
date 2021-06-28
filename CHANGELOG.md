@@ -1,3 +1,7 @@
+### v7.1.1/v7.1.2
+
+Re-pack with fixes for a plugin signature issue.
+
 ### v7.1.0
 
 This release adds support for handling aggregate flow DSCP ToS/QoS values, coming soon in Helm 28.

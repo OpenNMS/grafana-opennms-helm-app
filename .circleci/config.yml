@@ -219,13 +219,15 @@ jobs:
           at: ~/
       - run:
           name: Create plugin tarball
-          command: mkdir -p ./dist/packages && tar --exclude='package-lock.json' --exclude='.circleci' --exclude='.git' --exclude='./node_modules' --exclude='./dist/packages' -czf "./dist/packages/opennms-helm_$(cat version.tag).tar.gz" .
+          command: mkdir -p ./dist/packages && tar --exclude='package-lock.json' --exclude='.circleci' --exclude='.git' --exclude='./node_modules' --exclude='./dist/packages' -czf "./dist/packages/opennms-helm_$(.circleci/get-version.sh).tar.gz" .
       - store_artifacts:
           path: ./dist/packages
       - persist_to_workspace:
           root: ~/
           paths:
             - ./project/dist/packages
+            - ./project/package.json
+            - ./project/version.tag
 
   make-zip:
     executor: build-executor-centos
@@ -252,13 +254,14 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
+            echo "version: $(.circleci/get-version.sh)"
             docker build \
-              --build-arg OPENNMS_HELM_PKG=opennms-helm_$(cat version.tag).tar.gz \
+              --build-arg OPENNMS_HELM_PKG=opennms-helm_$(.circleci/get-version.sh).tar.gz \
               --build-arg GRAFANA_VERSION=$(cat grafana.version) \
-              -t helm:$(cat version.tag) .
+              -t helm:$(.circleci/get-version.sh) .
       - run:
           name: Export Docker Image as artefact
-          command: docker image save helm:$(cat version.tag) -o helm-docker-image
+          command: docker image save helm:$(.circleci/get-version.sh) -o helm-docker-image
       - store_artifacts:
           path: ./helm-docker-image
       - persist_to_workspace:
@@ -273,7 +276,11 @@ jobs:
       - run:
           name: Create RPM package
           command: |
-            ./makerpm.js --release "$(git log --pretty=format:%cd --date=short -1 | sed -e s,-,,g).${CIRCLE_BUILD_NUM}"
+            RELEASE="$(.circleci/get-version.sh | cut -d- -f2-)"
+            if [ "$(grep -c -- -SNAPSHOT package.json)" -eq 0 ]; then
+              RELEASE=1
+            fi
+            ./makerpm.js --release "$RELEASE"
       - sign-packages/install-rpm-dependencies:
           skip_if_forked_pr: true
       - sign-packages/setup-env:
@@ -297,7 +304,11 @@ jobs:
       - run:
           name: Create DEB package
           command: |
-            ./makedeb.js --release "$(git log --pretty=format:%cd --date=short -1 | sed -e s,-,,g).${CIRCLE_BUILD_NUM}"
+            RELEASE="$(.circleci/get-version.sh | cut -d- -f2-)"
+            if [ "$(grep -c -- -SNAPSHOT package.json)" -eq 0 ]; then
+              RELEASE=1
+            fi
+            ./makedeb.js --release "$RELEASE"
       - sign-packages/install-deb-dependencies:
           skip_if_forked_pr: true
       - sign-packages/setup-env:
@@ -351,9 +362,9 @@ jobs:
       - run:
           name: Tag Docker Container Images for release and publish to DockerHub
           command: |
-            docker tag helm:$(cat version.tag) ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:$(cat version.tag)
-            docker tag helm:$(cat version.tag) ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:latest
-            docker push ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:$(cat version.tag)
+            docker tag helm:$(.circleci/get-version.sh) ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:$(.circleci/get-version.sh)
+            docker tag helm:$(.circleci/get-version.sh) ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:latest
+            docker push ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:$(.circleci/get-version.sh)
             docker push ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:latest
 
   publish-docker-image-bleeding:
@@ -394,7 +405,7 @@ jobs:
       - run:
           name: Tag Docker Container Images for bleeding and publish to DockerHub
           command: |
-            docker tag helm:$(cat version.tag) ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:bleeding
+            docker tag helm:$(.circleci/get-version.sh) ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:bleeding
             docker push ${DOCKERHUB_PROJECT_USER}/${DOCKERHUB_PROJECT_NAME}:bleeding
 
   publish-docs:
