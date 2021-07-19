@@ -31,7 +31,7 @@
     "recursive-copy": "^2.0.10",
     "rimraf": "^3.0.0",
     "specit": "^1.4.4",
-    "urijs": "^1.19.6",
+    "urijs": "^1.19.7",
     "which": "^2.0.1"
   },
   "engines": {
